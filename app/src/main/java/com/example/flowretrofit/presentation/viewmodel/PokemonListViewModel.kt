@@ -40,34 +40,36 @@ class PokemonListViewModel @Inject constructor(
     }
 
     fun loadPokemonPaginated() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main) {
             isLoading.value = true
-            val result = repository.getPokemonList(PAGE_SIZE, curPage * PAGE_SIZE)
-            when(result) {
-                is Resource.Success -> {
-                    endReached.value = curPage * PAGE_SIZE >= result.data!!.count
-                    val pokedexEntries = result.data.results.mapIndexed { index, entry ->
-                        val number = if(entry.url.endsWith("/")) {
-                            entry.url.dropLast(1).takeLastWhile { it.isDigit() }
-                        } else {
-                            entry.url.takeLastWhile { it.isDigit() }
+            repository.getPokemonList(PAGE_SIZE, curPage * PAGE_SIZE).collect(){ result->
+                when(result) {
+                    is Resource.Success -> {
+                        endReached.value = curPage * PAGE_SIZE >= result.data!!.count
+                        val pokedexEntries = result.data.results.mapIndexed { index, entry ->
+                            val number = if(entry.url.endsWith("/")) {
+                                entry.url.dropLast(1).takeLastWhile { it.isDigit() }
+                            } else {
+                                entry.url.takeLastWhile { it.isDigit() }
+                            }
+                            val url = "${SPRITES_BASE_URL}${number}.png"
+                            PokedexListEntry(entry.name.capitalize(Locale.ROOT), url, number.toInt())
                         }
-                        val url = "${SPRITES_BASE_URL}${number}.png"
-                        PokedexListEntry(entry.name.capitalize(Locale.ROOT), url, number.toInt())
+                        curPage++
+
+                        loadError.value = ""
+                        isLoading.value = false
+                        pokemonList.value += pokedexEntries
                     }
-                    curPage++
+                    is Resource.Error -> {
+                        loadError.value = result.message!!
+                        isLoading.value = false
+                    }
 
-                    loadError.value = ""
-                    isLoading.value = false
-                    pokemonList.value += pokedexEntries
+                    is Resource.Loading -> TODO()
                 }
-                is Resource.Error -> {
-                    loadError.value = result.message!!
-                    isLoading.value = false
-                }
-
-                is Resource.Loading -> TODO()
             }
+
         }
     }
 

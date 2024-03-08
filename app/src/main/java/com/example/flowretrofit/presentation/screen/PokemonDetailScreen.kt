@@ -18,9 +18,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -39,8 +42,14 @@ fun PokemonDetailScreen(
     pokemonImageSize: Dp = 200.dp,
     viewModel: PokemonDetailViewModel = hiltViewModel<PokemonDetailViewModel>()
 ) {
-    val pokemonInfo = produceState<Resource<Pokemon>>(initialValue = Resource.Loading()) {
-        value = viewModel.getPokemonInfo(pokemonName)
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val pokemonInfo = produceState<Resource<Pokemon>>(
+        initialValue = Resource.Loading(), key1 = lifecycle) {
+        lifecycle.repeatOnLifecycle(state = Lifecycle.State.STARTED) {
+            viewModel.getPokemonInfo(pokemonName).collect{ resource ->
+                value = resource
+            }
+        }
     }.value
     Box(modifier = Modifier
         .fillMaxSize()
