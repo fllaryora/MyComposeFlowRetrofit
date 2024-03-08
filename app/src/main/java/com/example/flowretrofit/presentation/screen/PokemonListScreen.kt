@@ -1,4 +1,4 @@
-package com.example.flowretrofit.presentation
+package com.example.flowretrofit.presentation.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -94,7 +94,7 @@ fun SearchBar(
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .onFocusChanged { focusState : FocusState ->
                     val isActive = focusState.isFocused && !focusState.isCaptured
-                    isHintDisplayed = isActive && text.isNotEmpty()
+                    isHintDisplayed = isActive && text.isEmpty()
                 }
         )
         if(isHintDisplayed) {
