@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,11 +33,13 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.request.ImageRequest
 import com.example.flowretrofit.data.models.PokedexListEntry
-import com.google.accompanist.coil.CoilImage
+//import com.google.accompanist.coil.CoilImage
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 //import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import com.example.flowretrofit.presentation.viewmodel.PokemonListViewModel
 import com.example.flowretrofit.ui.theme.RobotoCondensed
@@ -74,26 +77,28 @@ fun PokedexEntry(
             }
     ) {
         Column {
-            CoilImage(
-                request = ImageRequest.Builder(LocalContext.current)
+            SubcomposeAsyncImage(
+                model = /*ImageRequest.Builder(LocalContext.current)
                     .data(entry.imageUrl)
                     .target {
                         viewModel.calcDominantColor(it) { color ->
                             dominantColor = color
                         }
                     }
-                    .build(),
-                contentDescription = entry.pokemonName,
-                fadeIn = true,
+                    .build()*/
+                    entry.imageUrl,
                 modifier = Modifier
                     .size(120.dp)
-                    .align(CenterHorizontally)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.scale(0.5f)
-                )
-            }
+                    .align(CenterHorizontally),
+                contentDescription = entry.pokemonName,
+                loading = {
+                    CircularProgressIndicator(
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.scale(0.5f)
+                    )
+                } ,
+            )
+
             Text(
                 text = entry.pokemonName,
                 fontFamily = RobotoCondensed,

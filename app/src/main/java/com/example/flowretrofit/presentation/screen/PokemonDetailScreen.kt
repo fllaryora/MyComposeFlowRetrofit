@@ -17,16 +17,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.flowretrofit.data.network.Resource
 import com.example.flowretrofit.data.network.responces.Pokemon
 import com.example.flowretrofit.presentation.viewmodel.PokemonDetailViewModel
 import com.example.flowretrofit.presentation.widget.PokemonDetailStateWrapper
 import com.example.flowretrofit.presentation.widget.PokemonDetailTopSection
-import com.google.accompanist.coil.CoilImage
 
 @Composable
 fun PokemonDetailScreen(
@@ -82,14 +84,25 @@ fun PokemonDetailScreen(
                 .fillMaxSize()) {
             if(pokemonInfo is Resource.Success) {
                 pokemonInfo.data?.sprites?.let {
-                    CoilImage(
+                    AsyncImage(
+                        model = /*ImageRequest.Builder(LocalContext.current)
+                            .data(it.frontDefault)
+                            .crossfade(true)
+                            .build()*/
+                            it.frontDefault,
+                        modifier = Modifier
+                            .size(pokemonImageSize)
+                            .offset(y = topPadding),
+                        contentDescription = pokemonInfo.data.name,
+                    )
+                    /*CoilImage(
                         data = it.frontDefault,
                         contentDescription = pokemonInfo.data.name,
                         fadeIn = true,
                         modifier = Modifier
                             .size(pokemonImageSize)
                             .offset(y = topPadding)
-                    )
+                    )*/
                 }
             }
         }
