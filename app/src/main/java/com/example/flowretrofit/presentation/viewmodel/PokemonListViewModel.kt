@@ -6,7 +6,6 @@ import android.graphics.drawable.Drawable
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.palette.graphics.Palette
-import com.example.flowretrofit.data.network.repository.PokemonRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import androidx.compose.ui.graphics.Color
@@ -14,14 +13,17 @@ import androidx.lifecycle.viewModelScope
 import com.example.flowretrofit.data.Constants.PAGE_SIZE
 import com.example.flowretrofit.data.Constants.SPRITES_BASE_URL
 import com.example.flowretrofit.data.models.PokedexListEntry
+import com.example.flowretrofit.data.models.PokemonListEntries
 import com.example.flowretrofit.data.network.Resource
+import com.example.flowretrofit.data.network.responces.PokemonList
+import com.example.flowretrofit.domain.GetPokemonListUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 
 @HiltViewModel
 class PokemonListViewModel @Inject constructor(
-    private val repository: PokemonRepository
+    private val usecase: GetPokemonListUseCase
 ) : ViewModel() {
 
     private var curPage = 0
@@ -42,24 +44,16 @@ class PokemonListViewModel @Inject constructor(
     fun loadPokemonPaginated() {
         viewModelScope.launch(Dispatchers.Main) {
             isLoading.value = true
-            repository.getPokemonList(PAGE_SIZE, curPage * PAGE_SIZE).collect(){ result->
+            usecase.getPokemonList(PAGE_SIZE, curPage * PAGE_SIZE, curPage)
+                .collect { result : Resource<PokemonListEntries> ->
                 when(result) {
                     is Resource.Success -> {
-                        endReached.value = curPage * PAGE_SIZE >= result.data!!.count
-                        val pokedexEntries = result.data.results.mapIndexed { index, entry ->
-                            val number = if(entry.url.endsWith("/")) {
-                                entry.url.dropLast(1).takeLastWhile { it.isDigit() }
-                            } else {
-                                entry.url.takeLastWhile { it.isDigit() }
-                            }
-                            val url = "${SPRITES_BASE_URL}${number}.png"
-                            PokedexListEntry(entry.name.capitalize(Locale.ROOT), url, number.toInt())
-                        }
+                        endReached.value = result.data!!.endReached
                         curPage++
 
                         loadError.value = ""
                         isLoading.value = false
-                        pokemonList.value += pokedexEntries
+                        pokemonList.value += result.data.results
                     }
                     is Resource.Error -> {
                         loadError.value = result.message!!
