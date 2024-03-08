@@ -24,16 +24,18 @@ import androidx.navigation.NavController
 import com.example.flowretrofit.presentation.viewmodel.PokemonListViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.flowretrofit.data.models.PokedexListEntry
 
 @Composable
 fun PokemonList(
     navController: NavController,
     viewModel: PokemonListViewModel = hiltViewModel<PokemonListViewModel>()
 ) {
-    val pokemonList by remember { viewModel.pokemonList }
+    val pokemonList: List<PokedexListEntry> by remember { viewModel.pokemonList }
     val endReached by remember { viewModel.endReached }
     val loadError by remember { viewModel.loadError }
     val isLoading by remember { viewModel.isLoading }
+    val isSearching by remember { viewModel.isSearching }
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         val itemCount = if(pokemonList.size % 2 == 0) {
@@ -41,11 +43,13 @@ fun PokemonList(
         } else {
             pokemonList.size / 2 + 1
         }
-        items(itemCount) {
-            if(it >= itemCount - 1 && !endReached) {
+        items(itemCount) { rowIndex: Int ->
+            //Iterates the content of the list "LazyColumn"
+            val isHalfReached = rowIndex >= itemCount - 1
+            if(isHalfReached && !endReached && !isLoading && !isSearching) {
                 viewModel.loadPokemonPaginated()
             }
-            PokedexRow(rowIndex = it, entries = pokemonList, navController = navController)
+            PokedexRow(rowIndex = rowIndex, entries = pokemonList, navController = navController)
         }
     }
 

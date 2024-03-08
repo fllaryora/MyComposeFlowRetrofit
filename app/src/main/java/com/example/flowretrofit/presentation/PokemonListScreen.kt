@@ -24,15 +24,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.flowretrofit.R
+import com.example.flowretrofit.presentation.viewmodel.PokemonListViewModel
 import com.example.flowretrofit.presentation.widget.PokemonList
 
 //import androidx.compose.ui.focus.FocusState
 
 @Composable
 fun PokemonListScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: PokemonListViewModel = hiltViewModel<PokemonListViewModel>()
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -52,8 +55,8 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-            ) {
-
+            ) { stringToSearch : String ->
+                viewModel.searchPokemonList(stringToSearch)
             }
             Spacer(modifier = Modifier.height(16.dp))
             PokemonList(navController = navController)
@@ -91,7 +94,7 @@ fun SearchBar(
                 .padding(horizontal = 20.dp, vertical = 12.dp)
                 .onFocusChanged { focusState : FocusState ->
                     val isActive = focusState.isFocused && !focusState.isCaptured
-                    isHintDisplayed = isActive
+                    isHintDisplayed = isActive && text.isNotEmpty()
                 }
         )
         if(isHintDisplayed) {
